@@ -1,4 +1,4 @@
-namespace api.Enums
+namespace api.Features.Orders
 {
     public enum OrderCategory
     {

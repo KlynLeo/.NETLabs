@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using api.Dtos;
-using api.Enums;
-using api.Model;
+using api.Features.Orders.Dtos;
+using api.Features.Orders;
 using AutoMapper;
 
-namespace api.Resolvers
+namespace api.Common.Resolvers
 {
     public class CategoryDisplayResolver : IValueResolver<Order, OrderProfileDto, string>
     {

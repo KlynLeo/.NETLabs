@@ -2,20 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using api.Enums;
+using api.Features.Orders;
 using System.ComponentModel.DataAnnotations;
 
-namespace api.Model
+namespace api.Features.Orders
 {
     public class Order
     {
         [Key]
         public Guid Id { get; set; }
 
-        public string Title { get; set; }
-        public string Author { get; set; }
+        public required string Title { get; set; }
+        public required string Author { get; set; }
 
-        public string ISBN { get; set; }
+        public required string ISBN { get; set; }
 
         public OrderCategory Category { get; set; }
 

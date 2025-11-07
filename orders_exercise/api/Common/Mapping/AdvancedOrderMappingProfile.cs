@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using api.Resolvers;
+using api.Common.Resolvers;
 
 using AutoMapper;
-using api.Dtos;
-using api.Model;
+using api.Features.Orders.Dtos;
+using api.Features.Orders;
 
-namespace api.Mappers
+namespace api.Common.Mapping
 {
     public class AdvancedOrderMappingProfile : Profile
     {
@@ -25,7 +25,11 @@ namespace api.Mappers
                 .ForMember(dest => dest.FormattedPrice, opt => opt.MapFrom<PriceFormatterResolver>())
                 .ForMember(dest => dest.PublishedAge, opt => opt.MapFrom<PublishedAgeResolver>())
                 .ForMember(dest => dest.AuthorInitials, opt => opt.MapFrom<AuthorInitialsResolver>())
-                .ForMember(dest => dest.AvailabilityStatus, opt => opt.MapFrom<AvailabilityStatusResolver>());
+                .ForMember(dest => dest.AvailabilityStatus, opt => opt.MapFrom<AvailabilityStatusResolver>())
+                .ForMember(dest => dest.CoverImageUrl, opt => opt.MapFrom(src =>
+                    src.Category == OrderCategory.Children ? null : src.CoverImageUrl))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src =>
+                    src.Category == OrderCategory.Children ? src.Price * 0.9m : src.Price));
         }
     }
 }
