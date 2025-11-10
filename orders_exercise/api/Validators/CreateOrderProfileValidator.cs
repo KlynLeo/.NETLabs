@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http;
 using api.Data;
 using api.Features.Orders;
 using api.Features.Orders.Dtos;
@@ -16,15 +17,20 @@ namespace api.Features.Orders.Validators
     {
         private readonly ApplicationDBContext _db;
         private readonly ILogger<CreateOrderProfileValidator> _logger;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         private static readonly string[] InappropriateWords = { "badword1", "badword2" };
         private static readonly string[] ChildrenRestrictedWords = { "violence", "drugs" };
         private static readonly string[] TechnicalKeywords = { "software", "engineering", "programming", "data", "AI", "network", "cybersecurity", "cloud" };
 
-        public CreateOrderProfileValidator(ApplicationDBContext db, ILogger<CreateOrderProfileValidator> logger)
+        private string CorrelationId => 
+            _httpContextAccessor.HttpContext?.Items["X-Correlation-ID"]?.ToString() ?? "N/A";
+
+        public CreateOrderProfileValidator(ApplicationDBContext db, ILogger<CreateOrderProfileValidator> logger, IHttpContextAccessor httpContextAccessor)
         {
             _db = db;
             _logger = logger;
+            _httpContextAccessor = httpContextAccessor;
 
             RuleFor(x => x.Title)
                 .NotEmpty().WithMessage("Title cannot be empty")
@@ -109,32 +115,34 @@ namespace api.Features.Orders.Validators
 
         private bool BeValidTitle(string title)
         {
-            _logger.LogInformation("Validating title for inappropriate words | Title={Title}", title);
+            _logger.LogInformation("CorrelationId={CorrelationId} | Validating title for inappropriate words | Title={Title}", CorrelationId, title);
             return !InappropriateWords.Any(w => title.Contains(w, StringComparison.OrdinalIgnoreCase));
         }
 
         private async Task<bool> BeUniqueTitle(CreateOrderProfileRequest request, string title, CancellationToken ct)
         {
             bool exists = await _db.Orders.AnyAsync(o => o.Title == title && o.Author == request.Author, ct);
-            _logger.LogInformation("Title uniqueness check | Title={Title} | Author={Author} | Exists={Exists}", title, request.Author, exists);
+            _logger.LogInformation("CorrelationId={CorrelationId} | Title uniqueness check | Title={Title} | Author={Author} | Exists={Exists}", CorrelationId, title, request.Author, exists);
             return !exists;
         }
 
         private bool BeValidAuthorName(string author)
         {
+            _logger.LogInformation("CorrelationId={CorrelationId} | Validating author name | Author={Author}", CorrelationId, author);
             return Regex.IsMatch(author, @"^[a-zA-Z\s\-'\.]+$");
         }
 
         private bool BeValidISBN(string isbn)
         {
             string digits = isbn.Replace("-", "").Replace(" ", "");
+            _logger.LogInformation("CorrelationId={CorrelationId} | Validating ISBN format | ISBN={ISBN}", CorrelationId, isbn);
             return (digits.Length == 10 || digits.Length == 13) && digits.All(char.IsDigit);
         }
 
         private async Task<bool> BeUniqueISBN(string isbn, CancellationToken ct)
         {
             bool exists = await _db.Orders.AnyAsync(o => o.ISBN == isbn, ct);
-            _logger.LogInformation("ISBN uniqueness check | ISBN={ISBN} | Exists={Exists}", isbn, exists);
+            _logger.LogInformation("CorrelationId={CorrelationId} | ISBN uniqueness check | ISBN={ISBN} | Exists={Exists}", CorrelationId, isbn, exists);
             return !exists;
         }
 
@@ -156,26 +164,26 @@ namespace api.Features.Orders.Validators
 
             if (todayCount >= 500)
             {
-                _logger.LogWarning("Business rule violation | Daily order limit exceeded | Count={Count}", todayCount);
+                _logger.LogWarning("CorrelationId={CorrelationId} | Business rule violation | Daily order limit exceeded | Count={Count}", CorrelationId, todayCount);
                 return false;
             }
 
             if (request.Category == OrderCategory.Technical && request.Price < 20)
             {
-                _logger.LogWarning("Business rule violation | Technical order minimum price | Price={Price}", request.Price);
+                _logger.LogWarning("CorrelationId={CorrelationId} | Business rule violation | Technical order minimum price | Price={Price}", CorrelationId, request.Price);
                 return false;
             }
 
             if (request.Category == OrderCategory.Children &&
                 ChildrenRestrictedWords.Any(w => request.Title.Contains(w, StringComparison.OrdinalIgnoreCase)))
             {
-                _logger.LogWarning("Business rule violation | Children's order contains restricted words | Title={Title}", request.Title);
+                _logger.LogWarning("CorrelationId={CorrelationId} | Business rule violation | Children's order contains restricted words | Title={Title}", CorrelationId, request.Title);
                 return false;
             }
 
             if (request.Price > 500 && request.StockQuantity > 10)
             {
-                _logger.LogWarning("Business rule violation | High-value order stock limit | Price={Price} | Stock={Stock}", request.Price, request.StockQuantity);
+                _logger.LogWarning("CorrelationId={CorrelationId} | Business rule violation | High-value order stock limit | Price={Price} | Stock={Stock}", CorrelationId, request.Price, request.StockQuantity);
                 return false;
             }
 
@@ -202,7 +210,7 @@ namespace api.Features.Orders.Validators
         {
             if (order.Price > 100 && order.StockQuantity > 20)
             {
-                _logger.LogWarning("Expensive order has too much stock | Price={Price} | Stock={Stock}", order.Price, order.StockQuantity);
+                _logger.LogWarning("CorrelationId={CorrelationId} | Expensive order has too much stock | Price={Price} | Stock={Stock}", CorrelationId, order.Price, order.StockQuantity);
                 return false;
             }
             return true;

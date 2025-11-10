@@ -5,6 +5,11 @@ using api.Features.Orders.Dtos;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using api.Features.Orders.Validators;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using api.Common.Middleware;
+
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +27,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 builder.Services.AddDbContext<ApplicationDBContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
 builder.Services.AddMediatR(typeof(Program));
 builder.Services.AddMemoryCache();  
 
@@ -37,11 +43,15 @@ builder.Services.AddHttpContextAccessor();
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 
-
-
+builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderProfileValidator>();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationMiddleware<,>));
 
 
 var app = builder.Build();
+
+
+
 
 // Swagger UI
 if (app.Environment.IsDevelopment())

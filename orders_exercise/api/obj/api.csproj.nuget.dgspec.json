@@ -59,9 +59,17 @@
               "target": "Package",
               "version": "[12.0.1, )"
             },
+            "FluentAssertions": {
+              "target": "Package",
+              "version": "[8.8.0, )"
+            },
             "FluentValidation": {
               "target": "Package",
               "version": "[12.1.0, )"
+            },
+            "FluentValidation.AspNetCore": {
+              "target": "Package",
+              "version": "[11.3.1, )"
             },
             "MediatR": {
               "target": "Package",
@@ -77,19 +85,33 @@
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.10, )"
             },
             "Microsoft.EntityFrameworkCore.Design": {
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.10, )"
+            },
+            "Microsoft.EntityFrameworkCore.InMemory": {
+              "target": "Package",
+              "version": "[9.0.10, )"
             },
             "Microsoft.EntityFrameworkCore.SqlServer": {
               "target": "Package",
-              "version": "[9.0.7, )"
+              "version": "[9.0.10, )"
+            },
+            "Moq": {
+              "target": "Package",
+              "version": "[4.20.72, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.5.0, )"
+            },
+            "xunit.runner.visualstudio": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[3.1.5, )"
             }
           },
           "imports": [

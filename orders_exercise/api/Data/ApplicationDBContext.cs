@@ -10,18 +10,14 @@ namespace api.Data
     public class ApplicationDBContext : DbContext
     {
         public ApplicationDBContext(DbContextOptions<ApplicationDBContext> options)
-            : base(options)
-        {
-        }
+            : base(options) { }
 
         public DbSet<Order> Orders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Order>()
-                .Property(o => o.Price)
-                .HasPrecision(18, 2); 
+            modelBuilder.Entity<Order>().Property(o => o.Price).HasPrecision(18, 2);
         }
     }
 }
